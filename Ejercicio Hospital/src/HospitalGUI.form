@@ -54,7 +54,7 @@
                   <text value="Nombre:"/>
                 </properties>
               </component>
-              <component id="c71ef" class="javax.swing.JTextField" binding="textField3" default-binding="true">
+              <component id="c71ef" class="javax.swing.JTextField" binding="txtNombreMedico">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>
@@ -70,7 +70,7 @@
                   <text value="Especialidad:"/>
                 </properties>
               </component>
-              <component id="b9c2a" class="javax.swing.JTextField" binding="textField4" default-binding="true">
+              <component id="b9c2a" class="javax.swing.JTextField" binding="txtEspecialidad">
                 <constraints>
                   <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>
@@ -86,7 +86,7 @@
                   <text value="Registro:"/>
                 </properties>
               </component>
-              <component id="1cf6" class="javax.swing.JTextField" binding="textField5" default-binding="true">
+              <component id="1cf6" class="javax.swing.JTextField" binding="txtRegistro">
                 <constraints>
                   <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>
@@ -112,7 +112,7 @@
                   <text value="Nombre:"/>
                 </properties>
               </component>
-              <component id="fb3ae" class="javax.swing.JTextField" binding="textField1" default-binding="true">
+              <component id="fb3ae" class="javax.swing.JTextField" binding="txtNombrePaciente">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>
@@ -136,7 +136,7 @@
                   <text value="Saldo:"/>
                 </properties>
               </component>
-              <component id="649b3" class="javax.swing.JTextField" binding="textField6" default-binding="true">
+              <component id="649b3" class="javax.swing.JTextField" binding="txtSaldo">
                 <constraints>
                   <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>
@@ -176,7 +176,7 @@
                   <text value="Seleccionar Cirujano"/>
                 </properties>
               </component>
-              <component id="56dca" class="javax.swing.JComboBox" binding="comboBox2" default-binding="true">
+              <component id="56dca" class="javax.swing.JComboBox" binding="comboCirujanos">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -190,7 +190,7 @@
                   <text value="Estado Quirofano"/>
                 </properties>
               </component>
-              <component id="323d4" class="javax.swing.JCheckBox" binding="checkBox1" default-binding="true">
+              <component id="323d4" class="javax.swing.JCheckBox" binding="checkDisponible">
                 <constraints>
                   <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -213,7 +213,7 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="c8e0" class="javax.swing.JTextArea" binding="textArea1" default-binding="true">
+                  <component id="c8e0" class="javax.swing.JTextArea" binding="areaResultado">
                     <constraints/>
                     <properties/>
                   </component>
@@ -237,7 +237,7 @@
                   <text value="Seleccionar Paciente"/>
                 </properties>
               </component>
-              <component id="507bf" class="javax.swing.JComboBox" binding="comboBox3" default-binding="true">
+              <component id="507bf" class="javax.swing.JComboBox" binding="comboPacientes">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -262,7 +262,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="6caf8" class="javax.swing.JTextArea" binding="textArea2" default-binding="true">
+          <component id="6caf8" class="javax.swing.JTextArea" binding="areaResultadoIngreso">
             <constraints/>
             <properties/>
           </component>
