@@ -16,6 +16,8 @@ public class HospitalGUI {
     private JComboBox comboPacientes;
     private JButton procesarIngresoButton;
     private JTextArea areaResultadoIngreso;
+    private JButton verPacientesButton;
+    private JButton asignarPrioridadButton;
 
 
 }
