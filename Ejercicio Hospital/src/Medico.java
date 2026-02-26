@@ -13,6 +13,30 @@ public class Medico extends Persona {
         this.lPacientes = new ArrayList<>();
     }
 
+    public String getEspecialidad() {
+        return especialidad;
+    }
+
+    public void setEspecialidad(String especialidad) {
+        this.especialidad = especialidad;
+    }
+
+    public String getnRegistro() {
+        return nRegistro;
+    }
+
+    public void setnRegistro(String nRegistro) {
+        this.nRegistro = nRegistro;
+    }
+
+    public List<Paciente> getlPacientes() {
+        return lPacientes;
+    }
+
+    public void setlPacientes(List<Paciente> lPacientes) {
+        this.lPacientes = lPacientes;
+    }
+
     public void agregarPaciente(Paciente p) {
         lPacientes.add(p);
     }
@@ -24,7 +48,7 @@ public class Medico extends Persona {
         }
     }
 
-    public int asignarPrioridad(String sintoma) {
+    public void asignarPrioridad(String sintoma) {
         int prioridad = 0;
         switch (sintoma) {
             case "Infarto":
@@ -43,8 +67,6 @@ public class Medico extends Persona {
         System.out.println("El Dr. " + nombre +
                 " evaluó el síntoma " + sintoma +
                 " y asignó Prioridad " + prioridad);
-
-        return prioridad;
     }
 
     public void evaluarPaciente(Paciente p) {
@@ -57,5 +79,10 @@ public class Medico extends Persona {
     @Override
     public void presentarse() {
         System.out.println("Médico: " + nombre + " - " + especialidad);
+    }
+
+    @Override
+    public String toString() {
+        return nombre + " (" + especialidad + ")";
     }
 }

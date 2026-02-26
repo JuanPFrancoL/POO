@@ -74,6 +74,11 @@ public class Paciente extends Persona {
 
     @Override
     public void presentarse() {
+        System.out.println("Paciente: " + nombre + " | EPS: " + eps + " | Saldo: $" + saldo);
+    }
 
+    @Override
+    public String toString() {
+        return nombre + " (EPS: " + eps + ")";
     }
 }

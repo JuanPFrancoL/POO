@@ -2,21 +2,23 @@
  * Clase encargada de gestionar el ingreso del paciente
  */
 public class Atencion {
-    public void procesarIngreso(Paciente p) {
+    public String procesarIngreso(Paciente p) {
         String pabellon;
         switch (p.getEps()) {
             case "Sura":
-                pabellon = "Pabellon A";
+                pabellon = "Pabellón A";
                 break;
             case "Sanitas":
-                pabellon = "Pabellon B";
+                pabellon = "Pabellón B";
                 break;
             case "FOMAG":
-                pabellon = "Pabellon C";
+                pabellon = "Pabellón C";
                 break;
             default:
                 pabellon = "Pabellón D";
         }
-        System.out.println("Paciente asignado a " + pabellon);
+        String resultado = "Paciente " + p.getNombre() + " asignado a " + pabellon;
+        System.out.println(resultado);
+        return resultado;
     }
 }

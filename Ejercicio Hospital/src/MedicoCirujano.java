@@ -49,4 +49,9 @@ public class MedicoCirujano extends Medico implements ICirujano {
         System.out.println("Cirujano: " + nombre +
                 " - Quirófano " + numeroQuirofano);
     }
+
+    @Override
+    public String toString() {
+        return nombre + " - Cirujano (" + getEspecialidad() + ")";
+    }
 }
