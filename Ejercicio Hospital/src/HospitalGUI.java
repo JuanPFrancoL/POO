@@ -18,7 +18,7 @@ public class HospitalGUI {
 
     // Tab "Pacientes"
     private JTextField txtNombrePaciente;
-    private JComboBox comboBox1;
+    private JComboBox comboBox1;        // EPS
     private JTextField txtSaldo;
 
     // Tab "Cirujias"
@@ -36,8 +36,13 @@ public class HospitalGUI {
     private JTextField txtCosto;
     private JButton pagarButton;
     private JTextArea areaResultadoPago;
+
+    // Botón y consola general (fuera del tabbedPane)
     private JButton procesarIngresoButton;
-    private JTextArea areaResultadoIngreso;
+    // NOTA: areaResultadoIngreso NO está en el .form todavía.
+    // Por ahora usamos mostrarResultado() que escribe en areaResultadoPago
+    // o lanza un JOptionPane si areaResultadoPago también es null.
+    private JTextArea areaResultadoIngreso; // queda null hasta que se agregue al form
 
     // ── Costos por síntoma ─────────────────────────────────────────────────────
     private static final double COSTO_INFARTO = 500.0;
@@ -46,15 +51,14 @@ public class HospitalGUI {
     private static final double COSTO_OTRO = 150.0;
 
     // ── Datos ──────────────────────────────────────────────────────────────────
-    private List<Medico> listaMedicos;
-    private List<Paciente> listaPacientes;
-    private Atencion atencion;
+    private List<Medico> listaMedicos = new ArrayList<>();
+    private List<Paciente> listaPacientes = new ArrayList<>();
+    private Atencion atencion = new Atencion();
 
     // ── Constructor ────────────────────────────────────────────────────────────
     public HospitalGUI() {
-        listaMedicos = new ArrayList<>();
-        listaPacientes = new ArrayList<>();
-        atencion = new Atencion();
+        // El form inicializa los componentes automáticamente.
+        // inicializarEventos() se llama desde main DESPUÉS de setContentPane.
     }
 
     // ── Main ───────────────────────────────────────────────────────────────────
@@ -66,158 +70,177 @@ public class HospitalGUI {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.pack();
             frame.setLocationRelativeTo(null);
-            gui.inicializarEventos();   // ← mover DESPUÉS de setContentPane
+            gui.inicializarEventos(); // DESPUÉS de setContentPane para que los componentes existan
             frame.setVisible(true);
         });
+    }
+
+    // ── Método seguro para mostrar resultados ──────────────────────────────────
+    // Intenta escribir en areaResultadoIngreso; si es null usa areaResultadoPago;
+    // si también es null usa un JOptionPane como último recurso.
+    private void mostrarResultado(String texto) {
+        if (areaResultadoIngreso != null) {
+            areaResultadoIngreso.setText(texto);
+        } else if (areaResultadoPago != null) {
+            areaResultadoPago.setText(texto);
+        } else {
+            JOptionPane.showMessageDialog(null, texto, "Resultado", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void agregarResultado(String texto) {
+        if (areaResultadoIngreso != null) {
+            areaResultadoIngreso.append(texto + "\n");
+            areaResultadoIngreso.setCaretPosition(areaResultadoIngreso.getDocument().getLength());
+        } else if (areaResultadoPago != null) {
+            areaResultadoPago.append(texto + "\n");
+        } else {
+            JOptionPane.showMessageDialog(null, texto, "Resultado", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     // ── Eventos ────────────────────────────────────────────────────────────────
     public void inicializarEventos() {
 
-        // Botón principal según pestaña activa
-        procesarIngresoButton.addActionListener(e -> procesarSegunPestana());
+        // Botón principal (fuera del tabbedPane) → actúa según la pestaña activa
+        if (procesarIngresoButton != null)
+            procesarIngresoButton.addActionListener(e -> procesarSegunPestana());
 
         // ── Tab Medicos ──────────────────────────────────────────────────────
-        verPacientesButton.addActionListener(e -> {
-            if (listaPacientes.isEmpty()) {
-                areaResultadoIngreso.setText("No hay pacientes registrados.");
-                return;
-            }
-            StringBuilder sb = new StringBuilder("=== Pacientes Registrados ===\n");
-            for (Paciente p : listaPacientes) {
-                sb.append("• ").append(p.getNombre())
-                        .append(" | EPS: ").append(p.getEps())
-                        .append(" | Saldo: $").append(p.getSaldo())
-                        .append(" | Síntomas: ").append(p.getSintomas())
-                        .append("\n");
-            }
-            areaResultadoIngreso.setText(sb.toString());
-        });
-
-        // Asignar prioridad: el médico evalúa los síntomas del paciente seleccionado
-        asignarPrioridadButton.addActionListener(e -> {
-            if (listaMedicos.isEmpty()) {
-                areaResultadoIngreso.setText("No hay médicos registrados. Registre uno primero.");
-                return;
-            }
-            if (comboPacientes.getSelectedItem() == null) {
-                areaResultadoIngreso.setText("No hay pacientes. Registre uno primero.");
-                return;
-            }
-
-            // Tomar el primer médico disponible como evaluador
-            Medico medicoEvaluador = listaMedicos.get(0);
-            Paciente p = buscarPaciente(comboPacientes.getSelectedItem().toString());
-
-            if (p == null || p.getSintomas().isEmpty()) {
-                areaResultadoIngreso.setText("El paciente no tiene síntomas registrados.");
-                return;
-            }
-
-            StringBuilder sb = new StringBuilder(
-                    "=== Evaluación del Dr. " + medicoEvaluador.getNombre() + " ===\n");
-            sb.append("Paciente: ").append(p.getNombre()).append("\n\n");
-
-            for (String sintoma : p.getSintomas()) {
-                int prioridad;
-                switch (sintoma) {
-                    case "Infarto":
-                        prioridad = 1;
-                        break;
-                    case "Dolor":
-                        prioridad = 2;
-                        break;
-                    case "Fiebre":
-                        prioridad = 3;
-                        break;
-                    default:
-                        prioridad = 4;
+        if (verPacientesButton != null) {
+            verPacientesButton.addActionListener(e -> {
+                if (listaPacientes.isEmpty()) {
+                    mostrarResultado("No hay pacientes registrados.");
+                    return;
                 }
-                sb.append("Síntoma: '").append(sintoma)
-                        .append("'  →  Prioridad ").append(prioridad)
-                        .append(prioridad == 1 ? " (URGENTE)" :
-                                prioridad == 2 ? " (MODERADO)" :
-                                        prioridad == 3 ? " (LEVE)" : " (NORMAL)")
-                        .append("\n");
-            }
-            areaResultadoIngreso.setText(sb.toString());
-        });
+                StringBuilder sb = new StringBuilder("=== Pacientes Registrados ===\n");
+                for (Paciente p : listaPacientes) {
+                    sb.append("• ").append(p.getNombre())
+                            .append(" | EPS: ").append(p.getEps())
+                            .append(" | Saldo: $").append(p.getSaldo())
+                            .append(" | Síntomas: ").append(p.getSintomas())
+                            .append("\n");
+                }
+                mostrarResultado(sb.toString());
+            });
+        }
+
+        if (asignarPrioridadButton != null) {
+            asignarPrioridadButton.addActionListener(e -> {
+                if (listaMedicos.isEmpty()) {
+                    mostrarResultado("No hay médicos registrados. Registre uno primero.");
+                    return;
+                }
+                if (comboPacientes == null || comboPacientes.getSelectedItem() == null) {
+                    mostrarResultado("No hay pacientes. Registre uno primero.");
+                    return;
+                }
+                Medico medicoEvaluador = listaMedicos.get(0);
+                Paciente p = buscarPaciente(comboPacientes.getSelectedItem().toString());
+                if (p == null || p.getSintomas().isEmpty()) {
+                    mostrarResultado("El paciente no tiene síntomas registrados.");
+                    return;
+                }
+                StringBuilder sb = new StringBuilder(
+                        "=== Evaluación del Dr. " + medicoEvaluador.getNombre() + " ===\n");
+                sb.append("Paciente: ").append(p.getNombre()).append("\n\n");
+                for (String sintoma : p.getSintomas()) {
+                    int prioridad;
+                    switch (sintoma) {
+                        case "Infarto":
+                            prioridad = 1;
+                            break;
+                        case "Dolor":
+                            prioridad = 2;
+                            break;
+                        case "Fiebre":
+                            prioridad = 3;
+                            break;
+                        default:
+                            prioridad = 4;
+                    }
+                    sb.append("Síntoma: '").append(sintoma)
+                            .append("'  →  Prioridad ").append(prioridad)
+                            .append(prioridad == 1 ? " (URGENTE)" :
+                                    prioridad == 2 ? " (MODERADO)" :
+                                            prioridad == 3 ? " (LEVE)" : " (NORMAL)")
+                            .append("\n");
+                }
+                mostrarResultado(sb.toString());
+            });
+        }
 
         // ── Tab Cirugias ─────────────────────────────────────────────────────
-        operarButton.addActionListener(e -> {
-            if (comboCirujanos.getSelectedItem() == null) {
-                areaResultado.setText("No hay cirujanos registrados.\nRegistre un MedicoCirujano primero.");
-                return;
-            }
-            if (comboPacientesCirugia.getSelectedItem() == null) {
-                areaResultado.setText("Seleccione un paciente para operar.");
-                return;
-            }
-
-            MedicoCirujano cirujano = buscarCirujano(comboCirujanos.getSelectedItem().toString());
-            Paciente paciente = buscarPaciente(comboPacientesCirugia.getSelectedItem().toString());
-
-            if (cirujano == null || paciente == null) {
-                areaResultado.setText("Cirujano o paciente no encontrado.");
-                return;
-            }
-
-            boolean disponible = checkDisponible.isSelected();
-            cirujano.setQuirofanoDisponible(disponible);
-
-            StringBuilder sb = new StringBuilder("=== Resultado Cirugía ===\n");
-            sb.append("Cirujano    : ").append(cirujano.getNombre()).append("\n");
-            sb.append("Especialidad: ").append(cirujano.getEspecialidad()).append("\n");
-            sb.append("Quirófano   : ").append(cirujano.getNumeroQuirofano()).append("\n");
-            sb.append("Paciente    : ").append(paciente.getNombre()).append("\n");
-            sb.append("Estado      : ").append(disponible ? "Disponible" : "No disponible").append("\n\n");
-            sb.append(disponible
-                    ? "✔ Operación realizada exitosamente a " + paciente.getNombre() + "."
-                    : "✘ No se puede operar: quirófano no disponible.");
-
-            cirujano.operar();
-            areaResultado.setText(sb.toString());
-        });
+        if (operarButton != null) {
+            operarButton.addActionListener(e -> {
+                if (comboCirujanos == null || comboCirujanos.getSelectedItem() == null) {
+                    if (areaResultado != null)
+                        areaResultado.setText("No hay cirujanos. Registre un MedicoCirujano primero.");
+                    return;
+                }
+                if (comboPacientesCirugia == null || comboPacientesCirugia.getSelectedItem() == null) {
+                    if (areaResultado != null)
+                        areaResultado.setText("Seleccione un paciente para operar.");
+                    return;
+                }
+                MedicoCirujano cirujano = buscarCirujano(comboCirujanos.getSelectedItem().toString());
+                Paciente paciente = buscarPaciente(comboPacientesCirugia.getSelectedItem().toString());
+                if (cirujano == null || paciente == null) {
+                    if (areaResultado != null)
+                        areaResultado.setText("Cirujano o paciente no encontrado.");
+                    return;
+                }
+                boolean disponible = checkDisponible != null && checkDisponible.isSelected();
+                cirujano.setQuirofanoDisponible(disponible);
+                StringBuilder sb = new StringBuilder("=== Resultado Cirugía ===\n");
+                sb.append("Cirujano    : ").append(cirujano.getNombre()).append("\n");
+                sb.append("Especialidad: ").append(cirujano.getEspecialidad()).append("\n");
+                sb.append("Quirófano   : ").append(cirujano.getNumeroQuirofano()).append("\n");
+                sb.append("Paciente    : ").append(paciente.getNombre()).append("\n");
+                sb.append("Estado      : ").append(disponible ? "Disponible" : "No disponible").append("\n\n");
+                sb.append(disponible
+                        ? "✔ Operación realizada exitosamente a " + paciente.getNombre() + "."
+                        : "✘ No se puede operar: quirófano no disponible.");
+                cirujano.operar();
+                if (areaResultado != null) areaResultado.setText(sb.toString());
+            });
+        }
 
         // ── Tab Pagos ────────────────────────────────────────────────────────
+        if (comboPacientesPago != null)
+            comboPacientesPago.addActionListener(e -> calcularCosto());
 
-        // Al seleccionar paciente en Pagos, calcular costo automáticamente
-        comboPacientesPago.addActionListener(e -> calcularCosto());
-
-        // Botón Pagar
-        pagarButton.addActionListener(e -> {
-            if (comboPacientesPago.getSelectedItem() == null) {
-                areaResultadoPago.setText("Seleccione un paciente.");
-                return;
-            }
-            Paciente p = buscarPaciente(comboPacientesPago.getSelectedItem().toString());
-            if (p == null) {
-                areaResultadoPago.setText("Paciente no encontrado.");
-                return;
-            }
-
-            double costo = calcularCostoPaciente(p);
-            boolean exito = p.verificarPresupuesto(costo);
-
-            StringBuilder sb = new StringBuilder("=== Resultado Pago ===\n");
-            sb.append("Paciente : ").append(p.getNombre()).append("\n");
-            sb.append("EPS      : ").append(p.getEps()).append("\n");
-            sb.append("Síntomas : ").append(p.getSintomas()).append("\n");
-            sb.append("Costo    : $").append(costo).append("\n");
-            sb.append("Saldo    : $").append(p.getSaldo()).append("\n\n");
-            sb.append(exito
-                    ? "✔ Pago exitoso."
-                    : "✘ Pago rechazado: fondos insuficientes.");
-            areaResultadoPago.setText(sb.toString());
-        });
+        if (pagarButton != null) {
+            pagarButton.addActionListener(e -> {
+                if (comboPacientesPago == null || comboPacientesPago.getSelectedItem() == null) {
+                    if (areaResultadoPago != null) areaResultadoPago.setText("Seleccione un paciente.");
+                    return;
+                }
+                Paciente p = buscarPaciente(comboPacientesPago.getSelectedItem().toString());
+                if (p == null) {
+                    if (areaResultadoPago != null) areaResultadoPago.setText("Paciente no encontrado.");
+                    return;
+                }
+                double costo = calcularCostoPaciente(p);
+                boolean exito = p.verificarPresupuesto(costo);
+                StringBuilder sb = new StringBuilder("=== Resultado Pago ===\n");
+                sb.append("Paciente : ").append(p.getNombre()).append("\n");
+                sb.append("EPS      : ").append(p.getEps()).append("\n");
+                sb.append("Síntomas : ").append(p.getSintomas()).append("\n");
+                sb.append("Costo    : $").append(costo).append("\n");
+                sb.append("Saldo    : $").append(p.getSaldo()).append("\n\n");
+                sb.append(exito ? "✔ Pago exitoso." : "✘ Pago rechazado: fondos insuficientes.");
+                if (areaResultadoPago != null) areaResultadoPago.setText(sb.toString());
+            });
+        }
     }
 
-    // ── Calcular costo según síntomas del paciente seleccionado ───────────────
+    // ── Calcular costo según síntomas ──────────────────────────────────────────
     private void calcularCosto() {
-        if (comboPacientesPago.getSelectedItem() == null) return;
+        if (comboPacientesPago == null || comboPacientesPago.getSelectedItem() == null) return;
         Paciente p = buscarPaciente(comboPacientesPago.getSelectedItem().toString());
         if (p == null) return;
-        txtCosto.setText("$" + calcularCostoPaciente(p));
+        if (txtCosto != null) txtCosto.setText("$" + calcularCostoPaciente(p));
     }
 
     private double calcularCostoPaciente(Paciente p) {
@@ -241,8 +264,9 @@ public class HospitalGUI {
         return total;
     }
 
-    // ── Procesar según pestaña ─────────────────────────────────────────────────
+    // ── Procesar según pestaña activa ──────────────────────────────────────────
     private void procesarSegunPestana() {
+        if (tabbedPane1 == null) return;
         switch (tabbedPane1.getSelectedIndex()) {
             case 0:
                 registrarMedico();
@@ -254,15 +278,15 @@ public class HospitalGUI {
                 procesarIngreso();
                 break;
             default:
-                areaResultadoIngreso.setText("Use los botones de la pestaña activa.");
+                mostrarResultado("Use los botones de la pestaña activa.");
         }
     }
 
     // ── Registrar Médico ───────────────────────────────────────────────────────
     private void registrarMedico() {
-        String nombre = txtNombreMedico.getText().trim();
-        String especialidad = txtEspecialidad.getText().trim();
-        String registro = txtRegistro.getText().trim();
+        String nombre = txtNombreMedico != null ? txtNombreMedico.getText().trim() : "";
+        String especialidad = txtEspecialidad != null ? txtEspecialidad.getText().trim() : "";
+        String registro = txtRegistro != null ? txtRegistro.getText().trim() : "";
 
         if (nombre.isEmpty() || especialidad.isEmpty() || registro.isEmpty()) {
             JOptionPane.showMessageDialog(null,
@@ -288,26 +312,26 @@ public class HospitalGUI {
             MedicoCirujano c = new MedicoCirujano(
                     nombre, "000", 0, "-", especialidad, registro, nq, false);
             listaMedicos.add(c);
-            comboCirujanos.addItem(c.getNombre());
-            areaResultadoIngreso.setText("✔ Cirujano registrado: " + c.getNombre()
+            if (comboCirujanos != null) comboCirujanos.addItem(c.getNombre());
+            mostrarResultado("✔ Cirujano registrado: " + c.getNombre()
                     + " | Especialidad: " + especialidad
                     + " | Quirófano: " + nq);
         } else {
             Medico m = new Medico(nombre, "000", 0, "-", especialidad, registro);
             listaMedicos.add(m);
-            areaResultadoIngreso.setText("✔ Médico registrado: " + m.getNombre()
+            mostrarResultado("✔ Médico registrado: " + m.getNombre()
                     + " | Especialidad: " + especialidad);
         }
 
-        txtNombreMedico.setText("");
-        txtEspecialidad.setText("");
-        txtRegistro.setText("");
+        if (txtNombreMedico != null) txtNombreMedico.setText("");
+        if (txtEspecialidad != null) txtEspecialidad.setText("");
+        if (txtRegistro != null) txtRegistro.setText("");
     }
 
     // ── Registrar Paciente ─────────────────────────────────────────────────────
     private void registrarPaciente() {
-        String nombre = txtNombrePaciente.getText().trim();
-        String saldoStr = txtSaldo.getText().trim();
+        String nombre = txtNombrePaciente != null ? txtNombrePaciente.getText().trim() : "";
+        String saldoStr = txtSaldo != null ? txtSaldo.getText().trim() : "";
 
         if (nombre.isEmpty() || saldoStr.isEmpty()) {
             JOptionPane.showMessageDialog(null,
@@ -324,7 +348,8 @@ public class HospitalGUI {
             return;
         }
 
-        String eps = comboBox1.getSelectedItem().toString();
+        String eps = (comboBox1 != null && comboBox1.getSelectedItem() != null)
+                ? comboBox1.getSelectedItem().toString() : "Otro";
         String historial = "H" + (listaPacientes.size() + 1);
         Paciente p = new Paciente(nombre, "000", 0, "-", historial, eps, saldo);
 
@@ -337,11 +362,11 @@ public class HospitalGUI {
         listaPacientes.add(p);
 
         // Actualizar todos los combos de pacientes
-        comboPacientes.addItem(p.getNombre());
-        comboPacientesCirugia.addItem(p.getNombre());
-        comboPacientesPago.addItem(p.getNombre());
+        if (comboPacientes != null) comboPacientes.addItem(p.getNombre());
+        if (comboPacientesCirugia != null) comboPacientesCirugia.addItem(p.getNombre());
+        if (comboPacientesPago != null) comboPacientesPago.addItem(p.getNombre());
 
-        areaResultadoIngreso.setText("✔ Paciente registrado: " + p.getNombre()
+        mostrarResultado("✔ Paciente registrado: " + p.getNombre()
                 + " | EPS: " + eps
                 + " | Saldo: $" + saldo
                 + " | Historial: " + historial
@@ -352,23 +377,23 @@ public class HospitalGUI {
                 + "\n  Fiebre  → $" + COSTO_FIEBRE
                 + "\n  Otro    → $" + COSTO_OTRO);
 
-        txtNombrePaciente.setText("");
-        txtSaldo.setText("");
+        if (txtNombrePaciente != null) txtNombrePaciente.setText("");
+        if (txtSaldo != null) txtSaldo.setText("");
     }
 
     // ── Procesar Ingreso ───────────────────────────────────────────────────────
     private void procesarIngreso() {
-        if (comboPacientes.getSelectedItem() == null) {
-            areaResultadoIngreso.setText("No hay pacientes registrados. Registre uno primero.");
+        if (comboPacientes == null || comboPacientes.getSelectedItem() == null) {
+            mostrarResultado("No hay pacientes registrados. Registre uno primero.");
             return;
         }
         Paciente p = buscarPaciente(comboPacientes.getSelectedItem().toString());
         if (p == null) {
-            areaResultadoIngreso.setText("Paciente no encontrado.");
+            mostrarResultado("Paciente no encontrado.");
             return;
         }
         String resultado = atencion.procesarIngreso(p);
-        areaResultadoIngreso.setText("=== Ingreso Procesado ===\n"
+        mostrarResultado("=== Ingreso Procesado ===\n"
                 + resultado
                 + "\nEPS     : " + p.getEps()
                 + "\nSaldo   : $" + p.getSaldo()
