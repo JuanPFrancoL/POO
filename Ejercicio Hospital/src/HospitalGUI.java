@@ -2,83 +2,62 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Ventana principal del Sistema Hospital Lili's Valley.
- * <p>
- * Esta clase maneja toda la interfaz gráfica. Cada pestaña tiene
- * su propia sección con los componentes y botones que la controlan.
- * <p>
- * Pestañas disponibles:
- * 0 - Medicos   -> registrar médicos y cirujanos
- * 1 - Pacientes -> registrar pacientes
- * 2 - Cirugias  -> realizar operaciones
- * 3 - Atencion  -> asignar pacientes a pabellones según EPS
- * 4 - Pagos     -> verificar y cobrar según síntomas
- */
 public class HospitalGUI {
 
-    // Paneles principales que IntelliJ conecta con el archivo .form
+    // ── Bindings exactos del .form ─────────────────────────────────────────────
     private JPanel mainPanel;
     private JPanel SDAW;
-    private JTabbedPane tabbedPane1; // el componente de pestañas
+    private JTabbedPane tabbedPane1;
 
-    // Campos de la pestaña Medicos
-    private JTextField txtNombreMedico;      // nombre del médico a registrar
-    private JTextField txtEspecialidad;      // su especialidad (ej: Cardiología)
-    private JTextField txtRegistro;          // número de registro profesional
-    private JButton verPacientesButton;      // muestra todos los pacientes registrados
-    private JButton asignarPrioridadButton;  // evalúa síntomas y asigna prioridad
+    // Tab "Medicos"
+    private JTextField txtNombreMedico;
+    private JTextField txtEspecialidad;
+    private JTextField txtRegistro;
+    private JButton verPacientesButton;
+    private JButton asignarPrioridadButton;
 
-    // Campos de la pestaña Pacientes
-    private JTextField txtNombrePaciente; // nombre del paciente a registrar
-    private JComboBox comboBox1;          // para elegir la EPS del paciente
-    private JTextField txtSaldo;          // dinero disponible del paciente
+    // Tab "Pacientes"
+    private JTextField txtNombrePaciente;
+    private JComboBox comboBox1;
+    private JTextField txtSaldo;
 
-    // Campos de la pestaña Cirugias
-    private JComboBox comboCirujanos;        // lista de cirujanos disponibles
-    private JComboBox comboPacientesCirugia; // paciente que va a ser operado
-    private JCheckBox checkDisponible;       // indica si el quirófano está libre
-    private JButton operarButton;            // ejecuta la operación
-    private JTextArea areaResultado;         // muestra el resultado de la cirugía
+    // Tab "Cirujias"
+    private JComboBox comboCirujanos;
+    private JComboBox comboPacientesCirugia;
+    private JCheckBox checkDisponible;
+    private JButton operarButton;
+    private JTextArea areaResultado;
 
-    // Campos de la pestaña Atencion
-    private JComboBox comboPacientes; // lista de pacientes para asignar pabellón
+    // Tab "Atencion"
+    private JComboBox comboPacientes;
 
-    // Campos de la pestaña Pagos
-    private JComboBox comboPacientesPago; // paciente que va a pagar
-    private JTextField txtCosto;          // muestra el costo calculado automáticamente
-    private JButton pagarButton;          // ejecuta el cobro
-    private JTextArea areaResultadoPago;  // muestra si el pago fue exitoso o no
+    // Tab "Pagos"
+    private JComboBox comboPacientesPago;
+    private JTextField txtCosto;
+    private JButton pagarButton;
+    private JTextArea areaResultadoPago;
+    private JButton procesarIngresoButton;
+    private JTextArea areaResultadoIngreso;
 
-    // Botón general y área de resultados (están fuera de las pestañas, abajo de todo)
-    private JButton procesarIngresoButton;   // botón que actúa según la pestaña activa
-    private JTextArea areaResultadoIngreso;  // aquí aparecen los mensajes del sistema
-
-    // Costo fijo por cada tipo de síntoma
+    // ── Costos por sintoma ─────────────────────────────────────────────────────
     private static final double COSTO_INFARTO = 500.0;
     private static final double COSTO_DOLOR = 200.0;
     private static final double COSTO_FIEBRE = 100.0;
     private static final double COSTO_OTRO = 150.0;
 
-    // Listas donde guardamos los datos en memoria mientras corre el programa
+    // ── Datos ──────────────────────────────────────────────────────────────────
     private List<Medico> listaMedicos;
     private List<Paciente> listaPacientes;
-    private Atencion atencion; // objeto que maneja el ingreso a pabellones
+    private Atencion atencion;
 
-    /**
-     * Constructor: inicializa las listas vacías y el objeto de atención.
-     * IntelliJ llama esto automáticamente al abrir la ventana.
-     */
+    // ── Constructor ────────────────────────────────────────────────────────────
     public HospitalGUI() {
         listaMedicos = new ArrayList<>();
         listaPacientes = new ArrayList<>();
         atencion = new Atencion();
     }
 
-    /**
-     * Punto de entrada del programa.
-     * Crea la ventana, le pone el panel del .form y la muestra en pantalla.
-     */
+    // ── Main ───────────────────────────────────────────────────────────────────
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Sistema Hospital Lili's Valley");
@@ -86,26 +65,22 @@ public class HospitalGUI {
             frame.setContentPane(gui.mainPanel);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.pack();
-            frame.setLocationRelativeTo(null); // centrar en pantalla
-            gui.inicializarEventos(); // conectar botones DESPUÉS de cargar el panel
+            frame.setLocationRelativeTo(null);
+            gui.inicializarEventos();   // ← mover DESPUES de setContentPane
             frame.setVisible(true);
         });
     }
 
-    /**
-     * Conecta cada botón con lo que debe hacer cuando se presiona.
-     * Se llama una sola vez al iniciar, después de cargar la ventana.
-     */
+    // ── Eventos ────────────────────────────────────────────────────────────────
     public void inicializarEventos() {
 
-        // El botón "Procesar Ingreso" hace cosas distintas según la pestaña abierta
+        // Boton principal segun pestana activa
         procesarIngresoButton.addActionListener(e -> procesarSegunPestana());
 
-        // Botón "Ver Pacientes" (pestaña Medicos)
-        // Muestra la lista de todos los pacientes que hay registrados
+        // ── Tab Medicos ──────────────────────────────────────────────────────
         verPacientesButton.addActionListener(e -> {
             if (listaPacientes.isEmpty()) {
-                mostrarResultado("No hay pacientes registrados.");
+                areaResultadoIngreso.setText("No hay pacientes registrados.");
                 return;
             }
             StringBuilder sb = new StringBuilder("=== Pacientes Registrados ===\n");
@@ -113,35 +88,34 @@ public class HospitalGUI {
                 sb.append("• ").append(p.getNombre())
                         .append(" | EPS: ").append(p.getEps())
                         .append(" | Saldo: $").append(p.getSaldo())
-                        .append(" | Síntomas: ").append(p.getSintomas())
+                        .append(" | Sintomas: ").append(p.getSintomas())
                         .append("\n");
             }
-            mostrarResultado(sb.toString());
+            areaResultadoIngreso.setText(sb.toString());
         });
 
-        // Botón "Asignar Prioridad" (pestaña Medicos)
-        // El primer médico registrado evalúa los síntomas del paciente seleccionado
-        // y les asigna un nivel de urgencia del 1 (crítico) al 4 (normal)
+        // Asignar prioridad: el medico evalua los sintomas del paciente seleccionado
         asignarPrioridadButton.addActionListener(e -> {
             if (listaMedicos.isEmpty()) {
-                mostrarResultado("No hay médicos registrados. Registre uno primero.");
+                areaResultadoIngreso.setText("No hay medicos registrados. Registre uno primero.");
                 return;
             }
             if (comboPacientes.getSelectedItem() == null) {
-                mostrarResultado("No hay pacientes. Registre uno primero.");
+                areaResultadoIngreso.setText("No hay pacientes. Registre uno primero.");
                 return;
             }
 
+            // Tomar el primer medico disponible como evaluador
             Medico medicoEvaluador = listaMedicos.get(0);
             Paciente p = buscarPaciente(comboPacientes.getSelectedItem().toString());
 
             if (p == null || p.getSintomas().isEmpty()) {
-                mostrarResultado("El paciente no tiene síntomas registrados.");
+                areaResultadoIngreso.setText("El paciente no tiene sintomas registrados.");
                 return;
             }
 
             StringBuilder sb = new StringBuilder(
-                    "=== Evaluación del Dr. " + medicoEvaluador.getNombre() + " ===\n");
+                    "=== Evaluacion del Dr. " + medicoEvaluador.getNombre() + " ===\n");
             sb.append("Paciente: ").append(p.getNombre()).append("\n\n");
 
             for (String sintoma : p.getSintomas()) {
@@ -159,18 +133,17 @@ public class HospitalGUI {
                     default:
                         prioridad = 4;
                 }
-                sb.append("Síntoma: '").append(sintoma)
+                sb.append("Sintoma: '").append(sintoma)
                         .append("'  →  Prioridad ").append(prioridad)
                         .append(prioridad == 1 ? " (URGENTE)" :
                                 prioridad == 2 ? " (MODERADO)" :
                                         prioridad == 3 ? " (LEVE)" : " (NORMAL)")
                         .append("\n");
             }
-            mostrarResultado(sb.toString());
+            areaResultadoIngreso.setText(sb.toString());
         });
 
-        // Botón "Operar" (pestaña Cirugias)
-        // Verifica si el quirófano está disponible y realiza la operación
+        // ── Tab Cirugias ─────────────────────────────────────────────────────
         operarButton.addActionListener(e -> {
             if (comboCirujanos.getSelectedItem() == null) {
                 areaResultado.setText("No hay cirujanos registrados.\nRegistre un MedicoCirujano primero.");
@@ -192,25 +165,26 @@ public class HospitalGUI {
             boolean disponible = checkDisponible.isSelected();
             cirujano.setQuirofanoDisponible(disponible);
 
-            StringBuilder sb = new StringBuilder("=== Resultado Cirugía ===\n");
+            StringBuilder sb = new StringBuilder("=== Resultado Cirugia ===\n");
             sb.append("Cirujano    : ").append(cirujano.getNombre()).append("\n");
             sb.append("Especialidad: ").append(cirujano.getEspecialidad()).append("\n");
-            sb.append("Quirófano   : ").append(cirujano.getNumeroQuirofano()).append("\n");
+            sb.append("Quirofano   : ").append(cirujano.getNumeroQuirofano()).append("\n");
             sb.append("Paciente    : ").append(paciente.getNombre()).append("\n");
             sb.append("Estado      : ").append(disponible ? "Disponible" : "No disponible").append("\n\n");
             sb.append(disponible
-                    ? "✔ Operación realizada exitosamente a " + paciente.getNombre() + "."
-                    : "✘ No se puede operar: quirófano no disponible.");
+                    ? "✔ Operacion realizada exitosamente a " + paciente.getNombre() + "."
+                    : "✘ No se puede operar: quirofano no disponible.");
 
-            cirujano.operar(); // llama al método operar() de MedicoCirujano
+            cirujano.operar();
             areaResultado.setText(sb.toString());
         });
 
-        // Pestaña Pagos: cuando el usuario cambia el paciente, el costo se calcula solo
+        // ── Tab Pagos ────────────────────────────────────────────────────────
+
+        // Al seleccionar paciente en Pagos, calcular costo automaticamente
         comboPacientesPago.addActionListener(e -> calcularCosto());
 
-        // Botón "Pagar" (pestaña Pagos)
-        // Descuenta el costo del saldo del paciente si tiene suficiente dinero
+        // Boton Pagar
         pagarButton.addActionListener(e -> {
             if (comboPacientesPago.getSelectedItem() == null) {
                 areaResultadoPago.setText("Seleccione un paciente.");
@@ -228,18 +202,17 @@ public class HospitalGUI {
             StringBuilder sb = new StringBuilder("=== Resultado Pago ===\n");
             sb.append("Paciente : ").append(p.getNombre()).append("\n");
             sb.append("EPS      : ").append(p.getEps()).append("\n");
-            sb.append("Síntomas : ").append(p.getSintomas()).append("\n");
+            sb.append("Sintomas : ").append(p.getSintomas()).append("\n");
             sb.append("Costo    : $").append(costo).append("\n");
             sb.append("Saldo    : $").append(p.getSaldo()).append("\n\n");
-            sb.append(exito ? "✔ Pago exitoso." : "✘ Pago rechazado: fondos insuficientes.");
+            sb.append(exito
+                    ? "✔ Pago exitoso."
+                    : "✘ Pago rechazado: fondos insuficientes.");
             areaResultadoPago.setText(sb.toString());
         });
     }
 
-    /**
-     * Calcula el costo del paciente seleccionado en la pestaña Pagos
-     * y lo muestra automáticamente en el campo txtCosto.
-     */
+    // ── Calcular costo segun sintomas del paciente seleccionado ───────────────
     private void calcularCosto() {
         if (comboPacientesPago.getSelectedItem() == null) return;
         Paciente p = buscarPaciente(comboPacientesPago.getSelectedItem().toString());
@@ -247,10 +220,6 @@ public class HospitalGUI {
         txtCosto.setText("$" + calcularCostoPaciente(p));
     }
 
-    /**
-     * Suma el costo de todos los síntomas que tiene el paciente.
-     * Infarto = $500, Dolor = $200, Fiebre = $100, Otro = $150
-     */
     private double calcularCostoPaciente(Paciente p) {
         double total = 0;
         for (String sintoma : p.getSintomas()) {
@@ -272,15 +241,7 @@ public class HospitalGUI {
         return total;
     }
 
-    /**
-     * Decide qué hacer cuando se presiona "Procesar Ingreso",
-     * dependiendo de en qué pestaña está parado el usuario.
-     * <p>
-     * Pestaña 0 (Medicos)   → registra un médico o cirujano
-     * Pestaña 1 (Pacientes) → registra un paciente
-     * Pestaña 3 (Atencion)  → asigna pabellón según EPS
-     * Otras pestañas        → muestra un aviso
-     */
+    // ── Procesar segun pestana ─────────────────────────────────────────────────
     private void procesarSegunPestana() {
         switch (tabbedPane1.getSelectedIndex()) {
             case 0:
@@ -293,15 +254,11 @@ public class HospitalGUI {
                 procesarIngreso();
                 break;
             default:
-                mostrarResultado("Use los botones de la pestaña activa.");
+                areaResultadoIngreso.setText("Use los botones de la pestana activa.");
         }
     }
 
-    /**
-     * Lee los campos de la pestaña Medicos y crea un Medico o MedicoCirujano.
-     * Si el usuario dice que es cirujano, también le pide el número de quirófano.
-     * Al terminar, limpia los campos para el siguiente registro.
-     */
+    // ── Registrar Medico ───────────────────────────────────────────────────────
     private void registrarMedico() {
         String nombre = txtNombreMedico.getText().trim();
         String especialidad = txtEspecialidad.getText().trim();
@@ -314,47 +271,40 @@ public class HospitalGUI {
             return;
         }
 
-        // Pregunta si es cirujano o médico normal
         int opcion = JOptionPane.showConfirmDialog(null,
                 "¿Registrar como MedicoCirujano?",
-                "Tipo de médico", JOptionPane.YES_NO_OPTION);
+                "Tipo de medico", JOptionPane.YES_NO_OPTION);
 
         if (opcion == JOptionPane.YES_OPTION) {
-            String nqStr = JOptionPane.showInputDialog(null, "Número de quirófano:");
+            String nqStr = JOptionPane.showInputDialog(null, "Numero de quirofano:");
             if (nqStr == null || nqStr.trim().isEmpty()) return;
             int nq;
             try {
                 nq = Integer.parseInt(nqStr.trim());
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(null, "Número de quirófano inválido.");
+                JOptionPane.showMessageDialog(null, "Numero de quirofano invalido.");
                 return;
             }
             MedicoCirujano c = new MedicoCirujano(
                     nombre, "000", 0, "-", especialidad, registro, nq, false);
             listaMedicos.add(c);
-            comboCirujanos.addItem(c.getNombre()); // aparece en la pestaña Cirugias
-            mostrarResultado("✔ Cirujano registrado: " + c.getNombre()
+            comboCirujanos.addItem(c.getNombre());
+            areaResultadoIngreso.setText("✔ Cirujano registrado: " + c.getNombre()
                     + " | Especialidad: " + especialidad
-                    + " | Quirófano: " + nq);
+                    + " | Quirofano: " + nq);
         } else {
             Medico m = new Medico(nombre, "000", 0, "-", especialidad, registro);
             listaMedicos.add(m);
-            mostrarResultado("✔ Médico registrado: " + m.getNombre()
+            areaResultadoIngreso.setText("✔ Medico registrado: " + m.getNombre()
                     + " | Especialidad: " + especialidad);
         }
 
-        // Limpiar campos
         txtNombreMedico.setText("");
         txtEspecialidad.setText("");
         txtRegistro.setText("");
     }
 
-    /**
-     * Lee los campos de la pestaña Pacientes y crea un Paciente nuevo.
-     * Le pide el síntoma principal con un popup y lo agrega a la lista.
-     * También actualiza los combos de Cirugias, Atencion y Pagos.
-     * Al terminar, limpia los campos para el siguiente registro.
-     */
+    // ── Registrar Paciente ─────────────────────────────────────────────────────
     private void registrarPaciente() {
         String nombre = txtNombrePaciente.getText().trim();
         String saldoStr = txtSaldo.getText().trim();
@@ -370,107 +320,68 @@ public class HospitalGUI {
         try {
             saldo = Double.parseDouble(saldoStr);
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(null, "El saldo debe ser un número válido.");
+            JOptionPane.showMessageDialog(null, "El saldo debe ser un numero valido.");
             return;
         }
 
         String eps = comboBox1.getSelectedItem().toString();
-        String historial = "H" + (listaPacientes.size() + 1); // genera ID automático
+        String historial = "H" + (listaPacientes.size() + 1);
         Paciente p = new Paciente(nombre, "000", 0, "-", historial, eps, saldo);
 
-        // Popup para elegir el síntoma principal
         String[] opciones = {"Infarto", "Fiebre", "Dolor", "Otro"};
         String sintoma = (String) JOptionPane.showInputDialog(null,
-                "Síntoma principal:", "Síntoma",
+                "Sintoma principal:", "Sintoma",
                 JOptionPane.PLAIN_MESSAGE, null, opciones, opciones[0]);
         if (sintoma != null) p.agregarSintoma(sintoma);
 
         listaPacientes.add(p);
 
-        // Agregar el nombre del paciente a todos los combos que lo necesitan
+        // Actualizar todos los combos de pacientes
         comboPacientes.addItem(p.getNombre());
         comboPacientesCirugia.addItem(p.getNombre());
         comboPacientesPago.addItem(p.getNombre());
 
-        mostrarResultado("✔ Paciente registrado: " + p.getNombre()
+        areaResultadoIngreso.setText("✔ Paciente registrado: " + p.getNombre()
                 + " | EPS: " + eps
                 + " | Saldo: $" + saldo
                 + " | Historial: " + historial
-                + (sintoma != null ? " | Síntoma: " + sintoma : "")
-                + "\n\nCostos por síntoma:"
+                + (sintoma != null ? " | Sintoma: " + sintoma : "")
+                + "\n\nCostos por sintoma:"
                 + "\n  Infarto → $" + COSTO_INFARTO
                 + "\n  Dolor   → $" + COSTO_DOLOR
                 + "\n  Fiebre  → $" + COSTO_FIEBRE
                 + "\n  Otro    → $" + COSTO_OTRO);
 
-        // Limpiar campos
         txtNombrePaciente.setText("");
         txtSaldo.setText("");
     }
 
-    /**
-     * Toma el paciente seleccionado en la pestaña Atencion
-     * y lo asigna al pabellón que le corresponde según su EPS.
-     * La lógica de asignación está en la clase Atencion.
-     */
+    // ── Procesar Ingreso ───────────────────────────────────────────────────────
     private void procesarIngreso() {
         if (comboPacientes.getSelectedItem() == null) {
-            mostrarResultado("No hay pacientes registrados. Registre uno primero.");
+            areaResultadoIngreso.setText("No hay pacientes registrados. Registre uno primero.");
             return;
         }
         Paciente p = buscarPaciente(comboPacientes.getSelectedItem().toString());
         if (p == null) {
-            mostrarResultado("Paciente no encontrado.");
+            areaResultadoIngreso.setText("Paciente no encontrado.");
             return;
         }
         String resultado = atencion.procesarIngreso(p);
-        mostrarResultado("=== Ingreso Procesado ===\n"
+        areaResultadoIngreso.setText("=== Ingreso Procesado ===\n"
                 + resultado
                 + "\nEPS     : " + p.getEps()
                 + "\nSaldo   : $" + p.getSaldo()
-                + "\nSíntomas: " + p.getSintomas());
+                + "\nSintomas: " + p.getSintomas());
     }
 
-    /**
-     * Muestra un texto en el área de resultados (la caja de texto de abajo).
-     * Si por alguna razón esa caja no existe, muestra un popup en su lugar.
-     */
-    private void mostrarResultado(String texto) {
-        if (areaResultadoIngreso != null) {
-            areaResultadoIngreso.setText(texto);
-        } else {
-            JOptionPane.showMessageDialog(null, texto, "Resultado", JOptionPane.INFORMATION_MESSAGE);
-        }
-    }
-
-    /**
-     * Agrega texto al área de resultados sin borrar lo que ya había.
-     * Mueve el scroll al final para que siempre se vea lo último.
-     */
-    private void agregarResultado(String texto) {
-        if (areaResultadoIngreso != null) {
-            areaResultadoIngreso.append(texto + "\n");
-            areaResultadoIngreso.setCaretPosition(areaResultadoIngreso.getDocument().getLength());
-        } else {
-            JOptionPane.showMessageDialog(null, texto, "Resultado", JOptionPane.INFORMATION_MESSAGE);
-        }
-    }
-
-    /**
-     * Busca un paciente en la lista por su nombre (sin importar mayúsculas).
-     * Devuelve el paciente si lo encuentra, o null si no existe.
-     */
+    // ── Busquedas ──────────────────────────────────────────────────────────────
     private Paciente buscarPaciente(String nombre) {
         for (Paciente p : listaPacientes)
             if (p.getNombre().equalsIgnoreCase(nombre)) return p;
         return null;
     }
 
-    /**
-     * Busca un cirujano dentro de la lista de médicos.
-     * Solo devuelve el que sea instancia de MedicoCirujano y tenga ese nombre.
-     * Devuelve null si no lo encuentra.
-     */
     private MedicoCirujano buscarCirujano(String nombre) {
         for (Medico m : listaMedicos)
             if (m instanceof MedicoCirujano && m.getNombre().equalsIgnoreCase(nombre))
