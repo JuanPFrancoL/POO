@@ -3,8 +3,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HospitalGUI {
-
-    // ── Bindings exactos del .form ─────────────────────────────────────────────
     private JPanel mainPanel;
     private JPanel SDAW;
     private JTabbedPane tabbedPane1;
@@ -39,25 +37,25 @@ public class HospitalGUI {
     private JButton procesarIngresoButton;
     private JTextArea areaResultadoIngreso;
 
-    // ── Costos por síntoma ─────────────────────────────────────────────────────
+    //Costos por síntoma
     private static final double COSTO_INFARTO = 500.0;
     private static final double COSTO_DOLOR = 200.0;
     private static final double COSTO_FIEBRE = 100.0;
     private static final double COSTO_OTRO = 150.0;
 
-    // ── Datos ──────────────────────────────────────────────────────────────────
+    //Datos
     private List<Medico> listaMedicos;
     private List<Paciente> listaPacientes;
     private Atencion atencion;
 
-    // ── Constructor ────────────────────────────────────────────────────────────
+    //Constructor
     public HospitalGUI() {
         listaMedicos = new ArrayList<>();
         listaPacientes = new ArrayList<>();
         atencion = new Atencion();
     }
 
-    // ── Main ───────────────────────────────────────────────────────────────────
+    //Main
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Sistema Hospital Lili's Valley");
@@ -71,13 +69,13 @@ public class HospitalGUI {
         });
     }
 
-    // ── Eventos ────────────────────────────────────────────────────────────────
+    //Eventos
     public void inicializarEventos() {
 
-        // Botón principal según pestaña activa
+        //Botón principal según pestaña activa
         procesarIngresoButton.addActionListener(e -> procesarSegunPestana());
 
-        // ── Tab Medicos ──────────────────────────────────────────────────────
+        //Tab Medicos
         verPacientesButton.addActionListener(e -> {
             if (listaPacientes.isEmpty()) {
                 mostrarResultado("No hay pacientes registrados.");
@@ -143,7 +141,7 @@ public class HospitalGUI {
             mostrarResultado(sb.toString());
         });
 
-        // ── Tab Cirugias ─────────────────────────────────────────────────────
+        //Tab Cirugias
         operarButton.addActionListener(e -> {
             if (comboCirujanos.getSelectedItem() == null) {
                 areaResultado.setText("No hay cirujanos registrados.\nRegistre un MedicoCirujano primero.");
@@ -179,7 +177,7 @@ public class HospitalGUI {
             areaResultado.setText(sb.toString());
         });
 
-        // ── Tab Pagos ────────────────────────────────────────────────────────
+        //Tab Pagos
 
         // Al seleccionar paciente en Pagos, calcular costo automáticamente
         comboPacientesPago.addActionListener(e -> calcularCosto());
@@ -212,7 +210,7 @@ public class HospitalGUI {
         });
     }
 
-    // ── Calcular costo según síntomas del paciente seleccionado ───────────────
+    //Calcular costo según síntomas del paciente seleccionado
     private void calcularCosto() {
         if (comboPacientesPago.getSelectedItem() == null) return;
         Paciente p = buscarPaciente(comboPacientesPago.getSelectedItem().toString());
@@ -241,7 +239,7 @@ public class HospitalGUI {
         return total;
     }
 
-    // ── Procesar según pestaña ─────────────────────────────────────────────────
+    //Procesar según pestaña
     private void procesarSegunPestana() {
         switch (tabbedPane1.getSelectedIndex()) {
             case 0:
@@ -258,7 +256,7 @@ public class HospitalGUI {
         }
     }
 
-    // ── Registrar Médico ───────────────────────────────────────────────────────
+    //Registrar Médico
     private void registrarMedico() {
         String nombre = txtNombreMedico.getText().trim();
         String especialidad = txtEspecialidad.getText().trim();
@@ -304,7 +302,7 @@ public class HospitalGUI {
         txtRegistro.setText("");
     }
 
-    // ── Registrar Paciente ─────────────────────────────────────────────────────
+    //Registrar Paciente
     private void registrarPaciente() {
         String nombre = txtNombrePaciente.getText().trim();
         String saldoStr = txtSaldo.getText().trim();
@@ -356,7 +354,7 @@ public class HospitalGUI {
         txtSaldo.setText("");
     }
 
-    // ── Procesar Ingreso ───────────────────────────────────────────────────────
+    //Procesar Ingreso
     private void procesarIngreso() {
         if (comboPacientes.getSelectedItem() == null) {
             mostrarResultado("No hay pacientes registrados. Registre uno primero.");
@@ -375,7 +373,7 @@ public class HospitalGUI {
                 + "\nSíntomas: " + p.getSintomas());
     }
 
-    // ── Métodos seguros para mostrar resultados en la consola ──────────────────
+    //Métodos seguros para mostrar resultados en la consola
     // Si areaResultadoIngreso existe (está en el form) escribe ahí.
     // Si por alguna razón es null, usa JOptionPane como respaldo.
     private void mostrarResultado(String texto) {
@@ -395,7 +393,7 @@ public class HospitalGUI {
         }
     }
 
-    // ── Búsquedas ──────────────────────────────────────────────────────────────
+    //Busquedas
     private Paciente buscarPaciente(String nombre) {
         for (Paciente p : listaPacientes)
             if (p.getNombre().equalsIgnoreCase(nombre)) return p;

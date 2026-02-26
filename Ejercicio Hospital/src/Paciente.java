@@ -12,7 +12,7 @@ public class Paciente extends Persona {
         this.nHistorial = nHistorial;
         this.eps = eps;
         this.saldo = saldo;
-        this.sintomas = new ArrayList<>();  // ← esta línea es la que falta
+        this.sintomas = new ArrayList<>();
     }
 
     public String getnHistorial() {
