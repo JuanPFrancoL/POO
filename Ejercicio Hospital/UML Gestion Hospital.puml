@@ -1,0 +1,81 @@
+@startuml
+class gestionHospital {
++ {static} void main(String[])
+}
+
+interface ICirujano {
+~ void operar()
+}
+
+class Medico {
+- String especialidad
+- String nRegistro
+# List<Paciente> lPacientes
++ void agregarPaciente(Paciente)
++ void revisarPacientes()
++ int asignarPrioridad(String)
++ void evaluarPaciente(Paciente)
++ void presentarse()
+}
+
+
+class MedicoCirujano {
+- int numeroQuirofano
+- boolean quirofanoDisponible
++ int getNumeroQuirofano()
++ void setNumeroQuirofano(int)
++ boolean isQuirofanoDisponible()
++ void setQuirofanoDisponible(boolean)
++ void operar()
++ void presentarse()
+}
+
+
+class Paciente {
+- String nHistorial
+- String eps
+- double saldo
+- List<String> sintomas
++ String getnHistorial()
++ void setnHistorial(String)
++ String getEps()
++ void setEps(String)
++ double getSaldo()
++ void setSaldo(double)
++ List<String> getSintomas()
++ void setSintomas(List<String>)
++ boolean verificarPresupuesto(double)
++ void agregarSintoma(String)
++ void mostrarSintomas()
++ void presentarse()
+}
+
+
+abstract class Persona {
+# String nombre
+# String dni
+# int edad
+# String genero
++ String getNombre()
++ void setNombre(String)
++ String getDni()
++ void setDni(String)
++ int getEdad()
++ void setEdad(int)
++ String getGenero()
++ void setGenero(String)
++ {abstract}void presentarse()
+}
+
+
+class Atencion {
++ void procesarIngreso(Paciente)
+}
+
+
+
+Persona <|-- Medico
+ICirujano <|.. MedicoCirujano
+Medico <|-- MedicoCirujano
+Persona <|-- Paciente
+@enduml
